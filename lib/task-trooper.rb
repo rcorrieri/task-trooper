@@ -51,7 +51,7 @@ command :list do |c|
     c.action do |args, options|
         ds.each do |task|
             status = if task[:completed] then "completed" else "pending" end
-            puts "Task [#{task[:id]}] - <#{status}> : #{task[:title]}"
+            puts "Task [#{task[:id]}] - <#{status}> : #{task[:title]} : #{task[:description]}"
         end
         pending_count = ds.where(:completed => false).count
         count = ds.count
