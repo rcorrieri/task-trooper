@@ -20,6 +20,7 @@ DB = Sequel.sqlite("#{config_dir}/tasks_db.db")
 unless DB.table_exists? :tasks
     DB.create_table(:tasks) do
       primary_key :id
+      String :project
       String :title
       String :description
       Boolean :completed
@@ -32,15 +33,19 @@ command :new do |c|
     c.syntax = 'task-trooper new'
     c.description = 'Creates a new task'
     c.option '--title STRING', String, 'Title of the task'
+    c.option '--project STRING', String, 'Name of the Project for this task'
     c.option '--description STRING', String, 'Task description'
     c.action do |args, options|
+        if options.project.nil?
+            options.project = ask('Provide a Project for the task: ')
+        end
         if options.title.nil?
             options.title = ask('Provide a title for the task: ')
         end
         if options.description.nil?
             options.description = ask('Provide a description for the task: ')
         end
-        ds.insert(:title => options.title, :description => options.description, :completed => false)
+        ds.insert(:project => options.project, :title => options.title, :description => options.description, :completed => false)
         say 'Task created.!'
     end
 end
@@ -51,7 +56,7 @@ command :list do |c|
     c.action do |args, options|
         ds.each do |task|
             status = if task[:completed] then "completed" else "pending" end
-            puts "Task [#{task[:id]}] - <#{status}> : #{task[:title]} : #{task[:description]}"
+            puts "Task [#{task[:id]}] - #{task[:project]} : <#{status}> : #{task[:title]} : #{task[:description]}"
         end
         pending_count = ds.where(:completed => false).count
         count = ds.count
